@@ -12,50 +12,34 @@
 		<relativePath />
 	</parent>
 
-	<groupId>com.mycompany</groupId>
-	<artifactId>GaussFiltering</artifactId>
-	<version>0.1.0-SNAPSHOT</version>
+	<groupId>uk.ac.crick.bentley</groupId>
+	<artifactId>OIRTuftSegmentation</artifactId>
+	<version>1</version>
 
-	<name>Gauss Filtering</name>
-	<description>A Maven project implementing an ImageJ command.</description>
-	<url>https://mycompany.com/imagej/gauss-filtering/</url>
-	<inceptionYear>2017</inceptionYear>
+	<name>OIR Tuft Segmentation</name>
+	<description>A plugin implementing a workflow to automatically segment 3D OIR blood vessel tuft formations in MicroCT scans for Dr. Bentley's lab group.</description>
+	<url>https://github.com/alexdoganis/3d_roi_tuft_segmenter</url>
+	<inceptionYear>2021</inceptionYear>
 	<organization>
-		<name>My Company</name>
-		<url>https://mycompany.com/</url>
+		<name>The Francis Crick Institute</name>
+		<url>https://www.crick.ac.uk</url>
 	</organization>
 	<licenses>
 		<license>
-			<name>Simplified BSD License</name>
-			<distribution>repo</distribution>
+			<name>GPL-v3.0</name>
+			<url>https://www.gnu.org/licenses/gpl-3.0.txt</url>
 		</license>
 	</licenses>
 
 	<developers>
-		<!-- See https://imagej.net/Team -->
 		<developer>
-			<id>ctrueden</id>
-			<name>Curtis Rueden</name>
-			<url>https://imagej.net/User:Rueden</url>
+			<id>apdoganis</id>
+			<name>Alexandros Doganis</name>
 			<roles>
-				<role>founder</role>
-				<role>lead</role>
 				<role>developer</role>
-				<role>debugger</role>
-				<role>reviewer</role>
-				<role>support</role>
-				<role>maintainer</role>
 			</roles>
 		</developer>
 	</developers>
-	<contributors>
-		<contributor>
-			<name>Yili Zhao</name>
-			<url>https://imagej.net/User:Panovr</url>
-			<roles><role>founder</role></roles>
-			<properties><id>panovr</id></properties>
-		</contributor>
-	</contributors>
 
 	<mailingLists>
 		<mailingList>
@@ -64,25 +48,19 @@
 		</mailingList>
 	</mailingLists>
 
-	<scm>
-		<connection>scm:git:git://github.com/imagej/example-imagej-command</connection>
-		<developerConnection>scm:git:git@github.com:imagej/example-imagej-command</developerConnection>
-		<tag>HEAD</tag>
-		<url>https://github.com/imagej/example-imagej-command</url>
-	</scm>
 	<issueManagement>
 		<system>GitHub Issues</system>
-		<url>https://github.com/imagej/example-imagej-command/issues</url>
+		<url>https://github.com/alexdoganis/3d_roi_tuft_segmenter/issues</url>
 	</issueManagement>
 	<ciManagement>
 		<system>None</system>
 	</ciManagement>
 
 	<properties>
-		<package-name>com.mycompany.imagej</package-name>
-		<main-class>com.mycompany.imagej.GaussFiltering</main-class>
-		<license.licenseName>bsd_2</license.licenseName>
-		<license.copyrightOwners>My Company, Inc.</license.copyrightOwners>
+		<package-name>uk.ac.crick.bentley</package-name>
+		<main-class>uk.ac.crick.bentley.OIRTuftSegmentation</main-class>
+		<license.licenseName>gpl_3</license.licenseName>
+		<license.copyrightOwners>FSF</license.copyrightOwners>
 	</properties>
 
 	<repositories>

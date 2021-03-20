@@ -6,7 +6,7 @@
  *     http://creativecommons.org/publicdomain/zero/1.0/
  */
 
-package com.mycompany.imagej;
+package uk.ac.crick.bentley;
 
 import net.imagej.Dataset;
 import net.imagej.ImageJ;
@@ -30,11 +30,11 @@ import java.util.List;
  * </p>
  * <p>
  * You should replace the parameter fields with your own inputs and outputs,
- * and replace the {@link run} method implementation with your own logic.
+ * and replace the {link run} method implementation with your own logic.
  * </p>
  */
-@Plugin(type = Command.class, menuPath = "Plugins>Gauss Filtering")
-public class GaussFiltering<T extends RealType<T>> implements Command {
+@Plugin(type = Command.class, menuPath = "Plugins>OIRTuftSegmentation")
+public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     //
     // Feel free to add more parameters here...
     //
@@ -94,7 +94,7 @@ public class GaussFiltering<T extends RealType<T>> implements Command {
             ij.ui().show(dataset);
 
             // invoke the plugin
-            ij.command().run(GaussFiltering.class, true);
+            ij.command().run(OIRTuftSegmentation.class, true);
         }
     }
 
