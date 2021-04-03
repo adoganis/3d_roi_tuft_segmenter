@@ -75,5 +75,16 @@
 			<groupId>net.imagej</groupId>
 			<artifactId>imagej</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.ilastik</groupId>
+			<artifactId>ilastik4ij</artifactId>
+			<version>1.6.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>com.github.mcib3d</groupId>
+			<artifactId>mcib3d-core</artifactId>
+			<version>1204d04b31217a7d14897a4dd93cc0eafc064e01</version>
+		</dependency>
+
 	</dependencies>
 </project>
