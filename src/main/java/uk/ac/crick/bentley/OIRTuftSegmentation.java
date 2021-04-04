@@ -26,7 +26,9 @@ import io.scif.services.DatasetIOService;
 
 import ij.*;
 import net.imagej.Dataset;
+import net.imagej.DatasetService;
 import net.imagej.ImageJ;
+import net.imagej.ImgPlus;
 import net.imagej.ops.OpService;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
@@ -43,8 +45,10 @@ import org.ilastik.ilastik4ij.IlastikPixelClassificationPrediction;
 import mcib3d.*;
 import mcib3d.image3d.ImageInt;
 
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 
 /**
@@ -59,10 +63,19 @@ import javax.swing.SwingUtilities;
  */
 @Plugin(type = Command.class, menuPath = "Plugins>OIRTuftSegmentation")
 public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
-    // Variables
 
-    // Plugin GUI
-    private static DialogGUI dialog;
+    // Classes to control
+    private DialogGUI dialog;                   // Plugin GUI
+    private PreProcessor preProcessor;          // Pre-Processor
+    private IlastikPredictor ilastikPredictor;  // ilastik Predictor
+    private PostProcessor postProcessor;        // Post-Processor
+
+    // Private vars
+    private ImgPlus imp;
+    private File ilastikProjectFile;
+    private String thresholdMethodName;
+    private double scaleFactor;
+    private boolean removeOutliers;
 
     // Parameters
 
@@ -70,10 +83,14 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     @Parameter
     private DatasetIOService datasetIOService;
 
+    @Parameter
+    private DatasetService datasetService;
+
     // For logging errors.
     @Parameter
     private LogService logService;
 
+    // Our SciJava context
     @Parameter
     private Context ctx;
 
@@ -87,19 +104,96 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
     @Override
     public void run() {
-        try {
-            image = datasetIOService.open(imageFile.getAbsolutePath());
+        logService.info("Starting OIRTuftSegmentation...");
 
-            SwingUtilities.invokeLater(() -> {
-                if (dialog == null) { dialog = new DialogGUI(ctx, image); }
+        // Open target image
+        try { image = datasetIOService.open(imageFile.getAbsolutePath()); }
+        catch (final IOException e) { logService.error(e); }
+
+        // Start GUI
+        try {
+            SwingUtilities.invokeAndWait(() -> {
+                dialog = new DialogGUI(ctx, image);
                 dialog.setVisible(true);
             });
+        }
+        catch (InterruptedException | InvocationTargetException e) { logService.error(e); }
 
+
+        // Wait for user to input to GUI and confirm run or exit
+        // Slightly poor form but much more elegant than thread synching
+        while(!dialog.runSegmentation() && !dialog.isQueuedForDisposal()) {
+            try { Thread.sleep(200); }
+            catch (InterruptedException ex) { logService.error(ex); }
         }
-        catch (final IOException exc) {
-            // Use the LogService to report the error.
-            logService.error(exc);
-        }
+        // User exited window, kill self
+        if(!dialog.isQueuedForDisposal()) { return; }
+
+
+        // Set global vars
+        setSelectedImagePlus(dialog.getSelectedImagePlus());
+        setIlastikProjectFile(dialog.getIlastikProjectFile());
+        setThresholdMethodName(dialog.getThresholdMethodName());
+        setScaleFactor(dialog.getScaleFactor());
+        setRemoveOutliers(dialog.getRemoveOutliers());
+
+        // Apply Pre-Processing
+
+
+        // Run ilastik Prediction
+
+        // Apply Post-Processing
+
+        // Open in 3D Manager
+
+        System.out.println("OIRTuftSegmentation finished");
+    }
+
+    // Setters
+
+    /**
+     * Setter for selected image
+     * @return ImagePlus selected by user in GUI
+     */
+    public ImgPlus setSelectedImagePlus(ImgPlus ip) {
+        imp = ip;
+        return imp;
+    }
+
+    /**
+     * Setter for scale factor
+     * @return double scale factor provided by user in GUI
+     */
+    public double setScaleFactor(double sf) {
+        scaleFactor = sf;
+        return scaleFactor;
+    }
+
+    /**
+     * Setter for ilastik project file
+     * @return ilastik project file selected by user in GUI
+     */
+    public File setIlastikProjectFile(File ipf) {
+        ilastikProjectFile = ipf;
+        return ilastikProjectFile;
+    }
+
+    /**
+     * Setter for auto-threshold method type
+     * @return String name of auto-threshold method in GUI
+     */
+    public String setThresholdMethodName(String name) {
+        thresholdMethodName = name;
+        return thresholdMethodName;
+    }
+
+    /**
+     * Setter for remove outliers operation
+     * @return boolean indicating if user wishes to remove outliers in GUI
+     */
+    public boolean setRemoveOutliers(boolean ro) {
+        removeOutliers = ro;
+        return removeOutliers;
     }
 
     /**

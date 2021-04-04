@@ -23,8 +23,13 @@ import ij.IJ;
 import ij.ImagePlus;
 import ij.WindowManager;
 import net.imagej.ImageJ;
+
 import net.imagej.Dataset;
+import net.imagej.ImgPlus;
+import net.imglib2.type.numeric.RealType;
 import org.scijava.Context;
+import org.scijava.Priority;
+import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.ui.DialogPrompt.MessageType;
@@ -41,6 +46,7 @@ import java.io.File;
  * @author alexandrosdoganis
  */
 public class DialogGUI extends JFrame {
+    // private vars
     private JPanel mainPanel;
     private JLabel preProcessLabel;
     private JLabel predictionLabel;
@@ -62,10 +68,22 @@ public class DialogGUI extends JFrame {
     private JComboBox imageComboBox;
 
     private Context context;
+    private boolean runSegmentation = false;    // Segmentation confirmation flag
+    private boolean queuedForDisposal = false;   // Disposal queue flag
 
-    // For logging errors.
+    private ImgPlus imp;
+    private double scaleFactor;
+    private File ilastikProjectFile;
+    private String thresholdMethodName;
+    private boolean removeOutliers;
+
+    // For logging errors
     @Parameter
     private LogService logService;
+
+    // For executing commands
+    @Parameter
+    private CommandService cmd;
 
     /**
      * Constructor
@@ -77,11 +95,15 @@ public class DialogGUI extends JFrame {
         logService = context.getService(LogService.class);
         logService.info("Initializing GUI...");
 
-        this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        cmd = context.getService(CommandService.class);
+
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setContentPane(mainPanel);
         this.pack();
         setTitle("OIR Tuft Segmenter");
-        imageComboBox.addItem(dataset.getImgPlus().getName());
+        String imgName = dataset.getImgPlus().getName();
+        if(!imgName.isEmpty()) { imageComboBox.addItem(imgName); }
+        imageComboBox.setSelectedIndex(imageComboBox.getItemCount()-1);     // Last added item is our image, select it
 
         ilastikBrowseButton.addActionListener(e -> {
             // open file picker
@@ -107,11 +129,31 @@ public class DialogGUI extends JFrame {
 
             // get confirmation
             if(getRunConfirmation()) {
-                // TODO - implement run functionality
                 // run
+                updatePublicVars(dataset);
+                runSegmentation = true;
+
+                // Close window
+                setVisible(false);
             } else { logService.info("Run command confirmation cancelled by user."); }
         });
+        this.addWindowListener(new WindowAdapter(){
+            // User closed window, signal to controller we are queued for disposal to avoid busy-waiting
+            public void windowClosing(WindowEvent e){ queuedForDisposal = true; }
+        });
         logService.info("Done.");
+    }
+
+    /**
+     * Public var update helper
+     * @param dataset dataset selected by user
+     */
+    private void updatePublicVars(Dataset dataset) {
+        imp = ImgPlus.wrap(dataset.getImgPlus());
+        scaleFactor = Double.parseDouble(scaleValue.getText());
+        ilastikProjectFile = new File(ilastikPathText.getText());
+        thresholdMethodName = thresholdMethod.getText();
+        removeOutliers = removeNoise.isSelected();
     }
 
     /**
@@ -121,7 +163,7 @@ public class DialogGUI extends JFrame {
     private boolean dataIsValid() {
         logService.info("Validating inputs...");
         boolean dataIsValid = true;
-        String validationMsg = "Validation failed:\n";
+        String validationMsg = "Invalid inputs:\n";
 
         // Validate scale factor
         try {
@@ -175,7 +217,7 @@ public class DialogGUI extends JFrame {
             // Prompt for confirmation.
             final UIService uiService = context.getService(UIService.class);
             final Result result =
-                    uiService.showDialog(validationMsg, "Invalid inputs", messageType, optionType);
+                uiService.showDialog(validationMsg, "Validation failed!", messageType, optionType);
         }
 
         logService.info("Done.");
@@ -203,4 +245,48 @@ public class DialogGUI extends JFrame {
         // Cancel the command execution if the user does not agree.
         return result == Result.YES_OPTION;
     }
+
+    // Accessors
+
+    /**
+     * Accessor for run ocnfirmation flag
+     * @return boolean describing if segmentation command confirmed by user
+     */
+    public boolean runSegmentation() { return runSegmentation; }
+
+    /**
+     * Accessor for run disposal queue flag
+     * @return boolean describing if window is queued for disposal
+     */
+    public boolean isQueuedForDisposal() { return queuedForDisposal; }
+
+    /**
+     * Accessor for selected image
+     * @return ImagePlus selected by user
+     */
+    public ImgPlus<? extends RealType<?>> getSelectedImagePlus() { return imp; }
+
+    /**
+     * Accessor for scale factor
+     * @return double scale factor provided by user
+     */
+    public double getScaleFactor() { return scaleFactor; }
+
+    /**
+     * Accessor for ilastik project file
+     * @return ilastik project file selected by user
+     */
+    public File getIlastikProjectFile() { return ilastikProjectFile; }
+
+    /**
+     * Accessor for auto-threshold method type
+     * @return String name of auto-threshold method
+     */
+    public String getThresholdMethodName() { return thresholdMethodName; }
+
+    /**
+     * Accessor for remove outliers operation
+     * @return boolean indicating if user wishes to remove outliers
+     */
+    public boolean getRemoveOutliers() { return removeOutliers; }
 }
