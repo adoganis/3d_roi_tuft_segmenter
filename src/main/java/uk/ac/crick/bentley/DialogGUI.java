@@ -1,6 +1,6 @@
 /*
  * Alexandros Doganis
- * A FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik
+ * The GUI of the OIRTuftSegmentation plugin
  * Copyright (C) 2021 Alexandros Doganis
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -45,7 +45,7 @@ import java.io.File;
  * The GUI of the OIRTuftSegmentation plugin
  * @author alexandrosdoganis
  */
-public class DialogGUI extends JFrame {
+public class DialogGUI<T extends RealType<T>> extends JFrame {
     // private vars
     private JPanel mainPanel;
     private JLabel preProcessLabel;
@@ -71,7 +71,7 @@ public class DialogGUI extends JFrame {
     private boolean runSegmentation = false;    // Segmentation confirmation flag
     private boolean queuedForDisposal = false;   // Disposal queue flag
 
-    private ImgPlus imp;
+    private ImgPlus<T> imp;
     private double scaleFactor;
     private File ilastikProjectFile;
     private String thresholdMethodName;
@@ -81,27 +81,22 @@ public class DialogGUI extends JFrame {
     @Parameter
     private LogService logService;
 
-    // For executing commands
-    @Parameter
-    private CommandService cmd;
 
     /**
      * Constructor
      * @param ctx The SciJava application context
-     * @param dataset the current open dataset to segment
+     * @param img the current open ImgPlus to segment
      **/
-    public DialogGUI(final Context ctx, Dataset dataset) {
+    public DialogGUI(final Context ctx, ImgPlus<T> img) {
         context = ctx;
         logService = context.getService(LogService.class);
         logService.info("Initializing GUI...");
-
-        cmd = context.getService(CommandService.class);
 
         this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         this.setContentPane(mainPanel);
         this.pack();
         setTitle("OIR Tuft Segmenter");
-        String imgName = dataset.getImgPlus().getName();
+        String imgName = img.getName();
         if(!imgName.isEmpty()) { imageComboBox.addItem(imgName); }
         imageComboBox.setSelectedIndex(imageComboBox.getItemCount()-1);     // Last added item is our image, select it
 
@@ -130,7 +125,7 @@ public class DialogGUI extends JFrame {
             // get confirmation
             if(getRunConfirmation()) {
                 // run
-                updatePublicVars(dataset);
+                updatePublicVars(img);
                 runSegmentation = true;
 
                 // Close window
@@ -146,10 +141,10 @@ public class DialogGUI extends JFrame {
 
     /**
      * Public var update helper
-     * @param dataset dataset selected by user
+     * @param ip dataset selected by user
      */
-    private void updatePublicVars(Dataset dataset) {
-        imp = ImgPlus.wrap(dataset.getImgPlus());
+    private void updatePublicVars(ImgPlus<T> ip) {
+        imp = ip;
         scaleFactor = Double.parseDouble(scaleValue.getText());
         ilastikProjectFile = new File(ilastikPathText.getText());
         thresholdMethodName = thresholdMethod.getText();
@@ -264,7 +259,7 @@ public class DialogGUI extends JFrame {
      * Accessor for selected image
      * @return ImagePlus selected by user
      */
-    public ImgPlus<? extends RealType<?>> getSelectedImagePlus() { return imp; }
+    public ImgPlus<T> getSelectedImgPlus() { return imp; }
 
     /**
      * Accessor for scale factor

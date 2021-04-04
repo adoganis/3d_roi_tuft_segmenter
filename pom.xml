@@ -41,13 +41,6 @@
 		</developer>
 	</developers>
 
-	<mailingLists>
-		<mailingList>
-			<name>Image.sc Forum</name>
-			<archive>https://forum.image.sc/tags/imagej</archive>
-		</mailingList>
-	</mailingLists>
-
 	<issueManagement>
 		<system>GitHub Issues</system>
 		<url>https://github.com/alexdoganis/3d_roi_tuft_segmenter/issues</url>
@@ -76,6 +69,11 @@
 			<artifactId>imagej</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>net.imagej</groupId>
+			<artifactId>ij</artifactId>
+			<version>1.53i</version>
+		</dependency>
+		<dependency>
 			<groupId>org.ilastik</groupId>
 			<artifactId>ilastik4ij</artifactId>
 			<version>1.6.1-SNAPSHOT</version>
@@ -84,6 +82,10 @@
 			<groupId>com.github.mcib3d</groupId>
 			<artifactId>mcib3d-core</artifactId>
 			<version>1204d04b31217a7d14897a4dd93cc0eafc064e01</version>
+		</dependency>
+		<dependency>
+			<groupId>net.imglib2</groupId>
+			<artifactId>imglib2-ij</artifactId>
 		</dependency>
 
 	</dependencies>

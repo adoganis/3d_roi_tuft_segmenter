@@ -36,6 +36,7 @@ import net.imglib2.type.numeric.RealType;
 import org.scijava.command.Command;
 import org.scijava.Context;
 import org.scijava.ItemIO;
+import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.log.LogService;
@@ -45,6 +46,7 @@ import org.ilastik.ilastik4ij.IlastikPixelClassificationPrediction;
 import mcib3d.*;
 import mcib3d.image3d.ImageInt;
 
+import java.awt.*;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
@@ -52,16 +54,10 @@ import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 
 /**
- * This example illustrates how to create an ImageJ {@link Command} plugin.
- * <p>
- * The code here is a simple Gaussian blur using ImageJ Ops.
- * </p>
- * <p>
- * You should replace the parameter fields with your own inputs and outputs,
- * and replace the {link run} method implementation with your own logic.
- * </p>
+ * The controller of the OIRTuftSegmentation plugin
+ * @author Alexandros Doganis
  */
-@Plugin(type = Command.class, menuPath = "Plugins>OIRTuftSegmentation")
+@Plugin(type = Command.class, menuPath = "Plugins>OIR Tuft Segmentation")
 public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
     // Classes to control
@@ -71,7 +67,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     private PostProcessor postProcessor;        // Post-Processor
 
     // Private vars
-    private ImgPlus imp;
+    private ImgPlus<T> imp;
     private File ilastikProjectFile;
     private String thresholdMethodName;
     private double scaleFactor;
@@ -80,8 +76,8 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     // Parameters
 
     // For opening and saving images.
-    @Parameter
-    private DatasetIOService datasetIOService;
+//    @Parameter
+//    private DatasetIOService datasetIOService;
 
     @Parameter
     private DatasetService datasetService;
@@ -94,9 +90,9 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     @Parameter
     private Context ctx;
 
-    // Input image to open
-    @Parameter(label = "Image to load")
-    private File imageFile;
+    // Already opened image
+    @Parameter
+    private Dataset currentData;
 
     // Working image
     @Parameter(type = ItemIO.OUTPUT)
@@ -106,14 +102,14 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     public void run() {
         logService.info("Starting OIRTuftSegmentation...");
 
-        // Open target image
-        try { image = datasetIOService.open(imageFile.getAbsolutePath()); }
-        catch (final IOException e) { logService.error(e); }
+        // If no open image, rompt user to open image to start workflow
+        final ImgPlus<T> openImage = ImgPlus.wrap((Img<T>)currentData.getImgPlus());
+        System.out.println(openImage.getName());
 
         // Start GUI
         try {
             SwingUtilities.invokeAndWait(() -> {
-                dialog = new DialogGUI(ctx, image);
+                dialog = new DialogGUI(ctx, openImage);
                 dialog.setVisible(true);
             });
         }
@@ -127,20 +123,25 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
             catch (InterruptedException ex) { logService.error(ex); }
         }
         // User exited window, kill self
-        if(!dialog.isQueuedForDisposal()) { return; }
-
+        if(dialog.isQueuedForDisposal()) {
+            logService.info("Exiting OIRTuftSegmentation");
+            return;
+        }
 
         // Set global vars
-        setSelectedImagePlus(dialog.getSelectedImagePlus());
+        setSelectedImgPlus(dialog.getSelectedImgPlus());
         setIlastikProjectFile(dialog.getIlastikProjectFile());
         setThresholdMethodName(dialog.getThresholdMethodName());
         setScaleFactor(dialog.getScaleFactor());
         setRemoveOutliers(dialog.getRemoveOutliers());
 
         // Apply Pre-Processing
-
+        preProcessor = new PreProcessor(ctx, imp);
+        preProcessor.setScaleFactor(scaleFactor);
+        preProcessor.run();
 
         // Run ilastik Prediction
+        ilastikPredictor = new IlastikPredictor(ctx, preProcessor.getScaledImagePlus());
 
         // Apply Post-Processing
 
@@ -149,19 +150,19 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
         System.out.println("OIRTuftSegmentation finished");
     }
 
-    // Setters
+    // Mutators
 
     /**
-     * Setter for selected image
+     * Mutator for selected image
      * @return ImagePlus selected by user in GUI
      */
-    public ImgPlus setSelectedImagePlus(ImgPlus ip) {
+    public ImgPlus<T> setSelectedImgPlus(ImgPlus<T> ip) {
         imp = ip;
         return imp;
     }
 
     /**
-     * Setter for scale factor
+     * Mutator for scale factor
      * @return double scale factor provided by user in GUI
      */
     public double setScaleFactor(double sf) {
@@ -170,7 +171,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     }
 
     /**
-     * Setter for ilastik project file
+     * Mutator for ilastik project file
      * @return ilastik project file selected by user in GUI
      */
     public File setIlastikProjectFile(File ipf) {
@@ -179,7 +180,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     }
 
     /**
-     * Setter for auto-threshold method type
+     * Mutator for auto-threshold method type
      * @return String name of auto-threshold method in GUI
      */
     public String setThresholdMethodName(String name) {
@@ -188,7 +189,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     }
 
     /**
-     * Setter for remove outliers operation
+     * Mutator for remove outliers operation
      * @return boolean indicating if user wishes to remove outliers in GUI
      */
     public boolean setRemoveOutliers(boolean ro) {
