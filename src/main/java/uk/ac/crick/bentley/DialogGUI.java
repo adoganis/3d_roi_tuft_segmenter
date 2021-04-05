@@ -19,17 +19,9 @@
 
 package uk.ac.crick.bentley;
 
-import ij.IJ;
-import ij.ImagePlus;
-import ij.WindowManager;
-import net.imagej.ImageJ;
-
-import net.imagej.Dataset;
 import net.imagej.ImgPlus;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.Context;
-import org.scijava.Priority;
-import org.scijava.command.CommandService;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
 import org.scijava.ui.DialogPrompt.MessageType;
@@ -79,7 +71,7 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
 
     // For logging errors
     @Parameter
-    private LogService logService;
+    private final LogService logService;
 
 
     /**

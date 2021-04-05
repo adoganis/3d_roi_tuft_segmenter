@@ -33,6 +33,7 @@ import java.util.List;
 /**
  * The Pre-Processor the OIRTuftSegmentation plugin
  * Currently only downscales given image
+ * @author alexandrosdoganis
  */
 public class PreProcessor<T extends RealType<T>> {
 
@@ -45,7 +46,7 @@ public class PreProcessor<T extends RealType<T>> {
 
     // For logging errors
     @Parameter
-    private LogService logService;
+    private final LogService logService;
 
     /**
      * Constructor
@@ -59,6 +60,10 @@ public class PreProcessor<T extends RealType<T>> {
         workingImagePlus = ImageJFunctions.wrap(imp, imp.getName());
     }
 
+    /**
+     * Run pre-processing steps
+     * At the moment only scales image
+     */
     public void run() {
         logService.info("Running Pre-Processor...");
 

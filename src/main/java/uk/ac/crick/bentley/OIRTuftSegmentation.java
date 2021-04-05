@@ -22,34 +22,20 @@
 
 package uk.ac.crick.bentley;
 
-import io.scif.services.DatasetIOService;
-
-import ij.*;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
-import net.imagej.ops.OpService;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.command.Command;
 import org.scijava.Context;
 import org.scijava.ItemIO;
-import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.log.LogService;
-import org.scijava.ui.UIService;
-import org.ilastik.ilastik4ij.IlastikOptions;
-import org.ilastik.ilastik4ij.IlastikPixelClassificationPrediction;
-import mcib3d.*;
-import mcib3d.image3d.ImageInt;
 
-import java.awt.*;
-import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 
@@ -102,14 +88,14 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     public void run() {
         logService.info("Starting OIRTuftSegmentation...");
 
-        // If no open image, rompt user to open image to start workflow
+        // If no open image, prompt user to open image to start workflow
         final ImgPlus<T> openImage = ImgPlus.wrap((Img<T>)currentData.getImgPlus());
         System.out.println(openImage.getName());
 
         // Start GUI
         try {
             SwingUtilities.invokeAndWait(() -> {
-                dialog = new DialogGUI(ctx, openImage);
+                dialog = new DialogGUI<T>(ctx, openImage);
                 dialog.setVisible(true);
             });
         }
@@ -142,6 +128,8 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
         // Run ilastik Prediction
         ilastikPredictor = new IlastikPredictor(ctx, preProcessor.getScaledImagePlus());
+        ilastikPredictor.setIlastikProjectFile(ilastikProjectFile);
+        ilastikPredictor.run();
 
         // Apply Post-Processing
 
@@ -154,48 +142,28 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
     /**
      * Mutator for selected image
-     * @return ImagePlus selected by user in GUI
      */
-    public ImgPlus<T> setSelectedImgPlus(ImgPlus<T> ip) {
-        imp = ip;
-        return imp;
-    }
+    public void setSelectedImgPlus(ImgPlus<T> ip) { imp = ip; }
 
     /**
      * Mutator for scale factor
-     * @return double scale factor provided by user in GUI
      */
-    public double setScaleFactor(double sf) {
-        scaleFactor = sf;
-        return scaleFactor;
-    }
+    public void setScaleFactor(double sf) { scaleFactor = sf; }
 
     /**
      * Mutator for ilastik project file
-     * @return ilastik project file selected by user in GUI
      */
-    public File setIlastikProjectFile(File ipf) {
-        ilastikProjectFile = ipf;
-        return ilastikProjectFile;
-    }
+    public void setIlastikProjectFile(File ipf) { ilastikProjectFile = ipf; }
 
     /**
      * Mutator for auto-threshold method type
-     * @return String name of auto-threshold method in GUI
      */
-    public String setThresholdMethodName(String name) {
-        thresholdMethodName = name;
-        return thresholdMethodName;
-    }
+    public void setThresholdMethodName(String name) { thresholdMethodName = name; }
 
     /**
      * Mutator for remove outliers operation
-     * @return boolean indicating if user wishes to remove outliers in GUI
      */
-    public boolean setRemoveOutliers(boolean ro) {
-        removeOutliers = ro;
-        return removeOutliers;
-    }
+    public void setRemoveOutliers(boolean ro) { removeOutliers = ro; }
 
     /**
      * Main function for dev purposes
@@ -208,19 +176,19 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
 
-//        // ask the user for a file to open
-//        final File file = ij.ui().chooseFile(null, "open");
-//
-//        if (file != null) {
-//            // load the dataset
-//            final Dataset dataset = ij.scifio().datasetIO().open(file.getPath());
-//
-//            // show the image
-//            ij.ui().show(dataset);
-//
-//            // invoke the plugin
-//            ij.command().run(OIRTuftSegmentation.class, true);
-//        }
+        // ask the user for a file to open
+        final File file = ij.ui().chooseFile(null, "open");
+
+        if (file != null) {
+            // load the dataset
+            final Dataset dataset = ij.scifio().datasetIO().open(file.getPath());
+
+            // show the image
+            ij.ui().show(dataset);
+
+            // invoke the plugin
+            ij.command().run(OIRTuftSegmentation.class, true);
+        }
     }
 
 }
