@@ -48,8 +48,7 @@ ImageJ, loads an image and runs the plugin. See also
 [this page](https://imagej.net/Debugging#Debugging_plugins_in_an_IDE_.28Netbeans.2C_IntelliJ.2C_Eclipse.2C_etc.29)
 for information how ImageJ makes it easier to debug in IDEs.
 
-Since this project is intended as a starting point for your own
-developments, it is in the public domain.
+As this project is under the [GNU](https://www.gnu.org/licenses/gpl-3.0.en.html) license, it is in the public domain.
 
 
 The Workflow
