@@ -4,6 +4,12 @@ This is FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting
 It was built by Alexandros Doganis for the Cellular Adaptive Behaviour Lab at the Francis Crick Institute to supplement their research on OIR.
 It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command).
 
+Requirements
+------------
+
+* [Fiji](https://imagej.net/Fiji/Downloads) build of ImageJ 2.1.0 or later
+* [ilastik](https://www.ilastik.org/download.html) 1.3.3 or later
+
 Development
 -----------
 
@@ -76,5 +82,13 @@ Segmentation
 
 ------------------
 
+Bugs
+----
+* Auto-thresholding produces poor output when run automatically. Inline with GIGO principles, rest of workflow produces nonsense. - Currently prompting user to avoid this
+* File does not auto-save at end of workflow.
+
+------------------
+
 **Acknowledgements**
+
 Huge thanks to Dr. Bentley and the whole CAB lab for their support and inputs.
