@@ -2,7 +2,7 @@
 ==========================
 This is FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik.
 It was built by Alexandros Doganis for the Cellular Adaptive Behaviour Lab at the Francis Crick Institute to supplement their research on OIR.  
-It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command).
+It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command), as such of particular note are several README sections and the main() borrowed from there.
 
 Requirements
 ------------
@@ -35,18 +35,8 @@ Installation
 However you build the project, in the end you will have the `.jar` file
 (called *artifact* in Maven speak) in the `target/` subdirectory.
 
-To copy the artifact into the correct place, you can call
-`mvn -Dscijava.app.directory="/path/to/Fiji.app/plugins"`.
-This will not only copy your artifact, but also all the dependencies.
-Restart your ImageJ or call *Help &#8250; Refresh Menus* to see your
-plugin in the menus.
-
-Developing plugins in an IDE is convenient, especially for debugging. To
-that end, the plugin contains a `main` method which sets the `plugins.dir`
-system property (so that the plugin is added to the Plugins menu), starts
-ImageJ, loads an image and runs the plugin. See also
-[this page](https://imagej.net/Debugging#Debugging_plugins_in_an_IDE_.28Netbeans.2C_IntelliJ.2C_Eclipse.2C_etc.29)
-for information how ImageJ makes it easier to debug in IDEs.
+Move this executable to `/Fiji.app/plugins` and restart Fiji.  
+(If you're reading this in the project submission, just do this step with the provided artifact)
 
 As this project is under the [GNU](https://www.gnu.org/licenses/gpl-3.0.en.html) license, it is in the public domain.
 
@@ -97,6 +87,6 @@ Bugs
 
 ------------------
 
-**Acknowledgements**
+**Acknowledgements**  
 
 Huge thanks to Dr. Bentley and the whole CAB lab for their support and inputs.
