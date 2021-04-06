@@ -1,5 +1,8 @@
-This is a FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik.
+**This is a FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik.**
 It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command).
+
+Development
+-----------
 
 The Mavenized plugin is intended to be developed within an IDE. 
 
@@ -16,6 +19,9 @@ The Mavenized plugin is intended to be developed within an IDE.
 
 Die-hard command-line developers can use Maven directly by calling `mvn`
 in the project root.
+
+Installation
+--------------
 
 However you build the project, in the end you will have the `.jar` file
 (called *artifact* in Maven speak) in the `target/` subdirectory.
