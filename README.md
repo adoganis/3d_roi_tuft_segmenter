@@ -56,7 +56,8 @@ Running
 1. Open Fiji and open the target image to segment.
 2. Run the plugin at `Plugins > OIR Tuft Segmentation`.
 3. Input desired paramters to the GUI and confirm `Run segmentation`.
-4. When the workflow completes, confirm the objects in 3D Manager.
+  3.1 The trained ilastik project file can be found at `/path/to/3d_roi_tuft_segmenter/ilastik/oir-tuft-pixel-classification-minimal_seg_export`
+5. When the workflow completes, confirm the objects in 3D Manager.
 
 
 The Workflow
