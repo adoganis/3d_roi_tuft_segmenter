@@ -92,8 +92,8 @@ Segmentation
 
 Bugs
 ----
-* Auto-thresholding produces poor output when run automatically. Inline with GIGO principles, rest of workflow produces nonsense. - Currently prompting user to avoid this
-* File does not auto-save at end of workflow.
+* File does not auto-save at end of workflow. - user must manually save file if they wish to keep it
+* 3D Manager does not update GUI on command completion, user must interact with the GUI to trigger an update (ex: Click "3D Segmentation", then cancel)
 
 ------------------
 
