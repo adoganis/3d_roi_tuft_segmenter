@@ -50,6 +50,14 @@ for information how ImageJ makes it easier to debug in IDEs.
 
 As this project is under the [GNU](https://www.gnu.org/licenses/gpl-3.0.en.html) license, it is in the public domain.
 
+Running
+-------
+
+1. Open Fiji and open the target image to segment.
+2. Run the plugin at `Plugins > OIR Tuft Segmentation`.
+3. Input desired paramters to the GUI and confirm `Run segmentation`.
+4. When the workflow completes, confirm the objects in 3D Manager.
+
 
 The Workflow
 =============
