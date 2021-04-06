@@ -57,7 +57,7 @@ Pre-Processing
 Prediction
 --------------
 
-2. Run ilastik Pixel Classification Prediciton on the downscaled image.
+2. Run [ilastik](https://www.ilastik.org/index.html) Pixel Classification Prediciton on the downscaled image.
 
 Post-Processing
 -------------------
