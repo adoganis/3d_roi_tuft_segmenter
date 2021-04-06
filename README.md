@@ -1,7 +1,7 @@
 3D Tuft Segmenter
 ==========================
 This is FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik.
-It was built by Alexandros Doganis for the Cellular Adaptive Behaviour Lab at the Francis Crick Institute to supplement their research on OIR.
+It was built by Alexandros Doganis for the Cellular Adaptive Behaviour Lab at the Francis Crick Institute to supplement their research on OIR.  
 It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command).
 
 Requirements
@@ -55,8 +55,8 @@ Running
 
 1. Open Fiji and open the target image to segment.
 2. Run the plugin at `Plugins > OIR Tuft Segmentation`.
-3. Input desired paramters to the GUI and confirm `Run segmentation`.
-  3.1 The trained ilastik project file can be found at `/path/to/3d_roi_tuft_segmenter/ilastik/oir-tuft-pixel-classification-minimal_seg_export`
+3. Input desired paramters to the GUI and confirm `Run segmentation`.  
+   The trained ilastik project file can be found at `/path/to/3d_roi_tuft_segmenter/ilastik/oir-tuft-pixel-classification-minimal_seg_export`
 5. When the workflow completes, confirm the objects in 3D Manager.
 
 
