@@ -1,8 +1,7 @@
-This is an example Maven project implementing an ImageJ command.
+This is a FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik.
+It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command).
 
-It is intended as an ideal starting point to develop new ImageJ commands
-in an IDE of your choice. You can even collaborate with developers using a
-different IDE than you.
+The Mavenized plugin is intended to be developed within an IDE. 
 
 * In [Eclipse](http://eclipse.org), for example, it is as simple as
   _File &#8250; Import... &#8250; Existing Maven Project_.
@@ -37,44 +36,31 @@ for information how ImageJ makes it easier to debug in IDEs.
 Since this project is intended as a starting point for your own
 developments, it is in the public domain.
 
-How to use this project as a starting point
-===========================================
 
-1. Visit [this link](https://github.com/imagej/example-imagej-command/generate)
-   to create a new repository in your space using this one as a template.
+The Workflow
+=============
 
-2. [Clone your new repository](https://help.github.com/en/articles/cloning-a-repository).
+Pre-Processing
+------------------
 
-3. Edit the `pom.xml` file. Every entry should be pretty self-explanatory.
-   In particular, change
-    1. the *artifactId* (will be used for the JAR file name prefix)
-    2. the *groupId*, ideally to a reverse domain name your organization owns
-    3. the *version* (note that you typically want to use a version number
-       ending in *-SNAPSHOT* to mark it as a work in progress rather than a
-       final version)
-    4. the *dependencies* (read how to specify the correct
-       *groupId/artifactId/version* triplet
-       [here](https://imagej.net/Maven#How_to_find_a_dependency.27s_groupId.2FartifactId.2Fversion_.28GAV.29.3F))
-    5. the *developer* information
-    6. the *scm* information
+1. Downscale the open image by the specified user amount to decrease memory usage and speed up workflow.
 
-3. Remove the `GaussFiltering.java` file and add your own `.java` files
-   to `src/main/java/<package>/` (if you need supporting files such as icons
-   in the resulting `.jar` file, put them into `src/main/resources/`)
+Prediction
+--------------
 
-4. Replace the contents of `README.md` with information about your project.
+2. Run ilastik Pixel Classification Prediciton on the downscaled image.
 
-5. Make your initial
-   [commit](https://help.github.com/en/desktop/contributing-to-projects/committing-and-reviewing-changes-to-your-project) and
-   [push the results](https://help.github.com/en/articles/pushing-commits-to-a-remote-repository)!
+Post-Processing
+-------------------
 
-### Eclipse: To ensure that Maven copies the plugin to your ImageJ folder
+3. Apply the user specified auto-threshold method to resulting prediction.
+   This normalizes the ilastik LUT output for further processing.
 
-1. Go to _Run Configurations..._
-2. Choose _Maven Build_
-3. Add the following parameter:
-    - name: `scijava.app.directory`
-    - value: `/path/to/ImageJ.app/`
+4. If indicated by user, denoise the output with Fiji's "Remove Outliers" process.
 
-This ensures that the final `.jar` file will also be copied to
-your ImageJ plugins folder everytime you run the Maven build.
+Segmentation
+-------------
+
+5. Using the external plugin "3D Manager" the (part of [3D ImageJ Suite](https://imagejdocu.tudor.lu/plugin/stacks/3d_ij_suite/start)), label the proessed prediction objects.
+
+6. Add the labelled image to 3D Manager for user inspection.
