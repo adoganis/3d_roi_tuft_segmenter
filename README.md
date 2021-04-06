@@ -1,4 +1,5 @@
-**This is a FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik.**
+This is a FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik
+=====
 It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command).
 
 Development
