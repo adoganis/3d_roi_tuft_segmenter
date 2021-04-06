@@ -30,7 +30,7 @@ However you build the project, in the end you will have the `.jar` file
 (called *artifact* in Maven speak) in the `target/` subdirectory.
 
 To copy the artifact into the correct place, you can call
-`mvn -Dscijava.app.directory="/path/to/ImageJ.app/"`.
+`mvn -Dscijava.app.directory="/path/to/Fiji.app/plugins"`.
 This will not only copy your artifact, but also all the dependencies.
 Restart your ImageJ or call *Help &#8250; Refresh Menus* to see your
 plugin in the menus.
