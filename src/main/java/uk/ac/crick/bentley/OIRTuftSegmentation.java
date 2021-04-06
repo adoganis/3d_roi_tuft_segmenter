@@ -188,6 +188,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
     /**
      * Main function for dev purposes
+     * Taken from ImageJ example command
      * @param args needed but ultimately ignored
      * @throws Exception some exception
      */
