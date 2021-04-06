@@ -1,5 +1,7 @@
-A FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik
-=====
+3D Tuft Segmenter
+==========================
+This is FIJI plugin to automatically segment 3D ROIs of OIR blood vessel tufting in MicroCT stacks via ilastik.
+It was built by Alexandros Doganis for the Cellular Adaptive Behaviour Lab at the Francis Crick Institute to supplement their research on OIR.
 It is based on [ImageJ's Example Command](https://github.com/imagej/example-imagej-command).
 
 Development
@@ -71,3 +73,8 @@ Segmentation
 5. Using the external plugin "3D Manager" the (part of [3D ImageJ Suite](https://imagejdocu.tudor.lu/plugin/stacks/3d_ij_suite/start)), label the proessed prediction objects.
 
 6. Add the labelled image to 3D Manager for user inspection.
+
+------------------
+
+**Acknowledgements**
+Huge thanks to Dr. Bentley and the whole CAB lab for their support and inputs.
