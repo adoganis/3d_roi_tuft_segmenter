@@ -30,7 +30,6 @@ import org.scijava.ui.DialogPrompt.Result;
 import org.scijava.ui.UIService;
 
 import javax.swing.*;
-import java.awt.event.*;
 import java.io.File;
 
 /**
@@ -56,14 +55,19 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
     private JLabel ilastikLabel;
     private JTextField ilastikPathText;
     private JButton ilastikBrowseButton;
-    private JLabel targetImage;
+    private JLabel targetImageLabel;
     private JComboBox imageComboBox;
+    private JPanel imagePanel;
+    private JLabel saveDirLabel;
+    private JTextField saveDirPathText;
+    private JButton saveDirBrosweButton;
 
     private Context context;
     private boolean runSegmentation = false;    // Segmentation confirmation flag
     private boolean queuedForDisposal = false;   // Disposal queue flag
 
     private ImgPlus<T> imp;
+    private File saveDir;
     private double scaleFactor;
     private File ilastikProjectFile;
     private String thresholdMethodName;
@@ -91,24 +95,11 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
         String imgName = img.getName();
         if(!imgName.isEmpty()) { imageComboBox.addItem(imgName); }
         imageComboBox.setSelectedIndex(imageComboBox.getItemCount()-1);     // Last added item is our image, select it
-
+        saveDirBrosweButton.addActionListener(e -> {
+            chooseAndGetFile("Save image to directory", saveDirPathText, true);
+        });
         ilastikBrowseButton.addActionListener(e -> {
-            // open file picker
-            JFileChooser fc = new JFileChooser();
-            fc.setDialogTitle("Trained ilastik project file");
-
-            // update ilastikPathtext with chosen path
-            int returnVal = fc.showOpenDialog(predictionPanel);
-            if (returnVal == JFileChooser.APPROVE_OPTION) {
-                File ilastikProjectFile = fc.getSelectedFile();
-                ilastikPathText.setText(ilastikProjectFile.getAbsolutePath());
-
-                // log file selection
-                logService.info("Opening: " + ilastikProjectFile.getName() + ".");
-            } else {
-                // log user cancellation
-                logService.info("Open command cancelled by user.");
-            }
+            chooseAndGetFile("Trained ilastik project file", ilastikPathText, false);
         });
         runButton.addActionListener(e -> {
             // validate form
@@ -124,11 +115,31 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
                 setVisible(false);
             } else { logService.info("Run command confirmation cancelled by user."); }
         });
-        this.addWindowListener(new WindowAdapter(){
-            // User closed window, signal to controller we are queued for disposal to avoid busy-waiting
-            public void windowClosing(WindowEvent e){ queuedForDisposal = true; }
-        });
         logService.info("Done.");
+
+    }
+
+    /**
+     * Helper to prompt user to choose file/directory path and update given text field
+     * @param title String title of file chooser
+     * @param textField JTextField to update with chosen path
+     * @param directoriesOnly boolean if JFileChooser
+     */
+    private void chooseAndGetFile(String title, JTextField textField, boolean directoriesOnly) {
+        // open file picker
+        JFileChooser fc = new JFileChooser();
+        fc.setDialogTitle(title);
+        if(directoriesOnly) { fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY); }
+
+        // update text field with chosen path
+        int returnVal = fc.showOpenDialog(mainPanel);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File selectedFile = fc.getSelectedFile();
+            textField.setText(selectedFile.getAbsolutePath());
+
+            // log file selection
+            logService.info("File selected: " + selectedFile.getName() + ".");
+        } else { logService.info("File selection cancelled by user."); }
     }
 
     /**
@@ -137,6 +148,7 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
      */
     private void updatePublicVars(ImgPlus<T> ip) {
         imp = ip;
+        saveDir = new File(saveDirPathText.getText());
         scaleFactor = Double.parseDouble(scaleValue.getText());
         ilastikProjectFile = new File(ilastikPathText.getText());
         thresholdMethodName = thresholdMethod.getText();
@@ -151,6 +163,26 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
         logService.info("Validating inputs...");
         boolean dataIsValid = true;
         String validationMsg = "Invalid inputs:\n";
+
+        // Validate selected image
+        Object selectedImage = imageComboBox.getSelectedItem();
+        if(selectedImage == null || selectedImage.toString().equals("Select image to segment...")) {
+            // No image selected
+            dataIsValid = false;
+            logService.info("Invalid input: no image selected to segment");
+            validationMsg += "You must select an image to segment.\n";
+        } else { logService.info(targetImageLabel.getText() + " " + selectedImage.toString()); }
+
+        // Validate save directory
+        File saveDir = new File(saveDirPathText.getText());
+        if(saveDir.exists() && saveDir.isDirectory()) {
+            logService.info(saveDirLabel.getText() + " " + saveDir.getName());
+        } else {
+            // File doesnt exist or is not a directory
+           String saveDirInfo = saveDirLabel.getText() + " " + saveDirPathText.getText();
+            logService.info("Invalid input: '" + saveDirInfo + "' is not a directory");
+            validationMsg += saveDirInfo + " must be an existing directory.\n";
+        }
 
         // Validate scale factor
         try {
@@ -187,15 +219,6 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
                 validationMsg += ilastikInfo + " must be an existing file.\n";
             } else { logService.info(ilastikInfo); }
         }
-
-        // Validate selected image
-        Object selectedImage = imageComboBox.getSelectedItem();
-        if(selectedImage == null || selectedImage.toString().equals("Select image to segment...")) {
-            // No image selected
-            dataIsValid = false;
-            logService.info("Invalid input: no image selected to segment");
-            validationMsg += "You must select an image to segment.\n";
-        } else { logService.info(targetImage.getText() + " " + selectedImage.toString()); }
 
         if(!dataIsValid) {
             final MessageType messageType = MessageType.WARNING_MESSAGE;
@@ -252,6 +275,12 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
      * @return ImagePlus selected by user
      */
     public ImgPlus<T> getSelectedImgPlus() { return imp; }
+
+    /**
+     * Accessor for save directory
+     * @return ImagePlus selected by user
+     */
+    public File getSaveDir() { return saveDir; }
 
     /**
      * Accessor for scale factor

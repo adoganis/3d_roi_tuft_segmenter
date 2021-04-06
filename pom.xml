@@ -87,6 +87,5 @@
 			<groupId>net.imglib2</groupId>
 			<artifactId>imglib2-ij</artifactId>
 		</dependency>
-
 	</dependencies>
 </project>

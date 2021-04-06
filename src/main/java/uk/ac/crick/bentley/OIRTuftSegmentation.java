@@ -22,6 +22,7 @@
 
 package uk.ac.crick.bentley;
 
+import ij.IJ;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ImageJ;
@@ -47,23 +48,20 @@ import javax.swing.SwingUtilities;
 public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
     // Classes to control
-    private DialogGUI dialog;                   // Plugin GUI
-    private PreProcessor preProcessor;          // Pre-Processor
-    private IlastikPredictor ilastikPredictor;  // ilastik Predictor
-    private PostProcessor postProcessor;        // Post-Processor
+    private DialogGUI<T> dialog;                    // Plugin GUI
+    private PreProcessor<T> preProcessor;           // Pre-Processor
+    private IlastikPredictor ilastikPredictor;      // ilastik Predictor
+    private PostProcessor postProcessor;            // Post-Processor
 
     // Private vars
     private ImgPlus<T> imp;
+    private File saveDir;
     private File ilastikProjectFile;
     private String thresholdMethodName;
     private double scaleFactor;
     private boolean removeOutliers;
 
     // Parameters
-
-    // For opening and saving images.
-//    @Parameter
-//    private DatasetIOService datasetIOService;
 
     @Parameter
     private DatasetService datasetService;
@@ -89,8 +87,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
         logService.info("Starting OIRTuftSegmentation...");
 
         // If no open image, prompt user to open image to start workflow
-        final ImgPlus<T> openImage = ImgPlus.wrap((Img<T>)currentData.getImgPlus());
-        System.out.println(openImage.getName());
+        final ImgPlus<T> openImage = ImgPlus.wrap((Img<T>) currentData.getImgPlus());
 
         // Start GUI
         try {
@@ -116,58 +113,80 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
         // Set global vars
         setSelectedImgPlus(dialog.getSelectedImgPlus());
+        setSaveDir(dialog.getSaveDir());
         setIlastikProjectFile(dialog.getIlastikProjectFile());
         setThresholdMethodName(dialog.getThresholdMethodName());
         setScaleFactor(dialog.getScaleFactor());
         setRemoveOutliers(dialog.getRemoveOutliers());
 
         // Apply Pre-Processing
-        preProcessor = new PreProcessor(ctx, imp);
+        preProcessor = new PreProcessor<T>(ctx, imp);
         preProcessor.setScaleFactor(scaleFactor);
         preProcessor.run();
 
         // Run ilastik Prediction
-        ilastikPredictor = new IlastikPredictor(ctx, preProcessor.getScaledImagePlus());
+        ilastikPredictor = new IlastikPredictor(ctx, preProcessor.getPreProcessedImagePlus());
         ilastikPredictor.setIlastikProjectFile(ilastikProjectFile);
         ilastikPredictor.run();
 
         // Apply Post-Processing
+        postProcessor = new PostProcessor(ctx, ilastikPredictor.getPredictionImagePlus(), imp.getName());
+        postProcessor.setThresholdMethodName(thresholdMethodName);
+        postProcessor.setRemoveOutliers(removeOutliers);
+        postProcessor.run();
 
-        // Open in 3D Manager
+        // Save post-processed output for user
+        IJ.save(postProcessor.getPostProcessedImage(), saveDir.getAbsolutePath());
 
-        System.out.println("OIRTuftSegmentation finished");
+        // Open in 3D Manager - must use macro as 3D suite is external plugin
+        IJ.runMacro("run(\"3D Manager\");\n" +
+                "Ext.Manager3D_Segment(128, 255);\n" +
+                "wait(5000);\n" +
+                "Ext.Manager3D_AddImage();");
+
+        logService.info("OIRTuftSegmentation finished");
     }
 
     // Mutators
 
     /**
      * Mutator for selected image
+     * @param ip ImgPlus<T> to set global var
      */
     public void setSelectedImgPlus(ImgPlus<T> ip) { imp = ip; }
 
     /**
+     * Mutator for save directory
+     * @param sd File to save output to
+     */
+    public void setSaveDir(File sd) { saveDir = sd; }
+
+    /**
      * Mutator for scale factor
+     * @param sf double scale factor to set global var
      */
     public void setScaleFactor(double sf) { scaleFactor = sf; }
 
     /**
      * Mutator for ilastik project file
+     * @param ipf File trained ilastik project to set global var
      */
     public void setIlastikProjectFile(File ipf) { ilastikProjectFile = ipf; }
 
     /**
      * Mutator for auto-threshold method type
+     * @param name String auto-threshold method name to apply
      */
     public void setThresholdMethodName(String name) { thresholdMethodName = name; }
 
     /**
      * Mutator for remove outliers operation
+     * @param ro boolean whether to remove outliers to set global var
      */
     public void setRemoveOutliers(boolean ro) { removeOutliers = ro; }
 
     /**
      * Main function for dev purposes
-     *
      * @param args needed but ultimately ignored
      * @throws Exception some exception
      */

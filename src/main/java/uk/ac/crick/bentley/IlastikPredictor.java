@@ -36,8 +36,8 @@ public class IlastikPredictor {
 
     // Private vars
     private File ilastikProjectFile;
-    private final ImagePlus scaledImagePlus;
-    private ImagePlus scaledPredictionImagePlus;
+    private final ImagePlus preProcessedImagePlus;
+    private ImagePlus predictionImagePlus;
 
     // Parameters
 
@@ -52,32 +52,32 @@ public class IlastikPredictor {
     /**
      * Constructor
      * @param ctx The SciJava application context
-     * @param scaledImage the scaled ImagePlus to segment
+     * @param preProcessedImage the pre-processed ImagePlus to segment
      **/
-    public IlastikPredictor(Context ctx, ImagePlus scaledImage) {
+    public IlastikPredictor(Context ctx, ImagePlus preProcessedImage) {
         logService = ctx.getService(LogService.class);
-        logService.info("Initializing IlastikPredictor");
+        logService.info("Initializing ilastik predictor...");
 
         datasetIOService = ctx.getService(DatasetIOService.class);
-        scaledImagePlus = scaledImage;
+        preProcessedImagePlus = preProcessedImage;
     }
 
     /**
      * Run prediction process
      */
     public void run() {
-        logService.info("Running Ilastik Prediction...");
+        logService.info("Running ilastik prediction...");
 
         // Predict tufts in image
         String ilastikOptionString = buildIlastikOptionsString(ilastikProjectFile);
         logService.info("Predicting...");
-        System.out.println(ilastikOptionString);
-        IJ.run(scaledImagePlus, "Run Pixel Classification Prediction", ilastikOptionString);
+        IJ.run(preProcessedImagePlus, "Run Pixel Classification Prediction", ilastikOptionString);
         logService.info("Done predicting.");
 
-        scaledPredictionImagePlus = IJ.getImage();
+        // Get focused window
+        predictionImagePlus = IJ.getImage();
 
-        logService.info("Ilastik Prediction finished");
+        logService.info("ilastik prediction finished");
     }
 
     // Helpers
@@ -96,7 +96,7 @@ public class IlastikPredictor {
         optionString += "projectfilename=[" + filePath + "] ";
 
         // Add input image title
-        optionString += "inputimage=" + scaledImagePlus.getTitle() + " ";
+        optionString += "inputimage=" + preProcessedImagePlus.getTitle() + " ";
 
         // Add segmentation specification
         optionString += "pixelclassificationtype=Segmentation";
@@ -107,7 +107,7 @@ public class IlastikPredictor {
 
     /**
      * Mutator for ilastik project file
-     * @param ipf trained ilastik project fiile
+     * @param ipf trained ilastik project file
      */
     public void setIlastikProjectFile(File ipf) { ilastikProjectFile = ipf; }
 
@@ -117,5 +117,5 @@ public class IlastikPredictor {
      * Accessor for predicted ImagePlus
      * @return predicted ImagePlus
      */
-    public ImagePlus getScaledPredictionImagePlus() { return scaledPredictionImagePlus; }
+    public ImagePlus getPredictionImagePlus() { return predictionImagePlus; }
 }

@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License along with
  * this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 package uk.ac.crick.bentley;
 
 import ij.IJ;
@@ -31,7 +32,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The Pre-Processor the OIRTuftSegmentation plugin
+ * The pre-processor the OIRTuftSegmentation plugin
  * Currently only downscales given image
  * @author alexandrosdoganis
  */
@@ -39,7 +40,7 @@ public class PreProcessor<T extends RealType<T>> {
 
     // Private vars
     private final ImagePlus workingImagePlus;
-    private ImagePlus scaledImagePlus;
+    private ImagePlus preProcessedImagePlus;
     private double scaleFactor;
 
     // Parameters
@@ -71,7 +72,7 @@ public class PreProcessor<T extends RealType<T>> {
         String scaleOptionsString = buildScaleOptionsString(workingImagePlus);
         logService.info("Scaling...");
         IJ.run(workingImagePlus, "Scale...", scaleOptionsString);
-        scaledImagePlus = IJ.getImage();
+        preProcessedImagePlus = IJ.getImage();
         logService.info("Done scaling.");
 
         logService.info("Pre-Processor finished");
@@ -133,6 +134,6 @@ public class PreProcessor<T extends RealType<T>> {
      * Accessor for scaled ImagePlus
      * @return scaled ImagePlus
      */
-    public ImagePlus getScaledImagePlus() { return scaledImagePlus; }
+    public ImagePlus getPreProcessedImagePlus() { return preProcessedImagePlus; }
 
 }
