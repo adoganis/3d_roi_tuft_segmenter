@@ -84,6 +84,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
     @Override
     public void run() {
+        logService = ctx.getService(LogService.class);
         logService.info("Starting OIRTuftSegmentation...");
 
         // If no open image, prompt user to open image to start workflow

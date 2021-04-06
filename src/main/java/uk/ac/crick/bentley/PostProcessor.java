@@ -21,7 +21,6 @@ package uk.ac.crick.bentley;
 
 import ij.IJ;
 import ij.ImagePlus;
-import io.scif.services.DatasetIOService;
 import org.scijava.Context;
 import org.scijava.log.LogService;
 import org.scijava.plugin.Parameter;
@@ -45,10 +44,6 @@ public class PostProcessor {
     // For logging errors
     @Parameter
     private final LogService logService;
-
-    // For opening and saving images.
-    @Parameter
-    private DatasetIOService datasetIOService;
 
     /**
      * Constructor
@@ -77,12 +72,7 @@ public class PostProcessor {
         // Apply specified Auto-Threshold method
         logService.info("Thresholding...");
         String thresholdOptionString = "method=" + thresholdMethodName + " white stack";
-        System.out.println(thresholdOptionString);
-//        String thresholdOptionString = "method=Huang white stack";
-        // BUG - feeding option parameters to automate this step results in garbage output
-        // Temp solution is to have user input to default thresholding ui
-        IJ.run("Auto Threshold", "method=Huang white stack");
-//        IJ.run("Auto Threshold");
+        IJ.run("Auto Threshold", thresholdOptionString);
         logService.info("Done thresholding.");
 
         // Duplicate virtual stack to convert to memory stack

@@ -30,6 +30,8 @@ import org.scijava.ui.DialogPrompt.Result;
 import org.scijava.ui.UIService;
 
 import javax.swing.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 
 /**
@@ -115,6 +117,11 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
                 setVisible(false);
             } else { logService.info("Run command confirmation cancelled by user."); }
         });
+        this.addWindowListener(new WindowAdapter(){
+            // User closed window, signal to controller we are queued for disposal to avoid busy-waiting
+            public void windowClosing(WindowEvent e){ queuedForDisposal = true; }
+        });
+
         logService.info("Done.");
 
     }
@@ -151,7 +158,7 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
         saveDir = new File(saveDirPathText.getText());
         scaleFactor = Double.parseDouble(scaleValue.getText());
         ilastikProjectFile = new File(ilastikPathText.getText());
-        thresholdMethodName = thresholdMethod.getText();
+        thresholdMethodName = thresholdComboBox.getSelectedItem().toString();
         removeOutliers = removeNoise.isSelected();
     }
 
