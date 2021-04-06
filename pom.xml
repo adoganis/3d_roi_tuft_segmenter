@@ -40,6 +40,27 @@
 			</roles>
 		</developer>
 	</developers>
+	<contributors>
+		<contributor>
+			<name>Katie Bentley</name>
+			<url>https://www.crick.ac.uk/research/find-a-researcher/katie-bentley</url>
+			<roles><role>founder</role></roles>
+		</contributor>
+	</contributors>
+
+	<mailingLists>
+		<mailingList>
+			<name>Image.sc Forum</name>
+			<archive>https://forum.image.sc/tags/imagej</archive>
+		</mailingList>
+	</mailingLists>
+
+	<scm>
+		<connection>scm:git:git://github.com/imagej/example-imagej-command</connection>
+		<developerConnection>scm:git:git@github.com:imagej/example-imagej-command</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/imagej/example-imagej-command</url>
+	</scm>
 
 	<issueManagement>
 		<system>GitHub Issues</system>

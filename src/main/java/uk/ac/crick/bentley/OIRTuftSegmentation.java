@@ -22,34 +22,21 @@
 
 package uk.ac.crick.bentley;
 
-import io.scif.services.DatasetIOService;
-
-import ij.*;
+import ij.IJ;
 import net.imagej.Dataset;
 import net.imagej.DatasetService;
 import net.imagej.ImageJ;
 import net.imagej.ImgPlus;
-import net.imagej.ops.OpService;
-import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.img.Img;
 import net.imglib2.type.numeric.RealType;
 import org.scijava.command.Command;
 import org.scijava.Context;
 import org.scijava.ItemIO;
-import org.scijava.display.DisplayService;
 import org.scijava.plugin.Parameter;
 import org.scijava.plugin.Plugin;
 import org.scijava.log.LogService;
-import org.scijava.ui.UIService;
-import org.ilastik.ilastik4ij.IlastikOptions;
-import org.ilastik.ilastik4ij.IlastikPixelClassificationPrediction;
-import mcib3d.*;
-import mcib3d.image3d.ImageInt;
 
-import java.awt.*;
-import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
 
@@ -61,23 +48,20 @@ import javax.swing.SwingUtilities;
 public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
     // Classes to control
-    private DialogGUI dialog;                   // Plugin GUI
-    private PreProcessor preProcessor;          // Pre-Processor
-    private IlastikPredictor ilastikPredictor;  // ilastik Predictor
-    private PostProcessor postProcessor;        // Post-Processor
+    private DialogGUI<T> dialog;                    // Plugin GUI
+    private PreProcessor<T> preProcessor;           // Pre-Processor
+    private IlastikPredictor ilastikPredictor;      // ilastik Predictor
+    private PostProcessor postProcessor;            // Post-Processor
 
     // Private vars
     private ImgPlus<T> imp;
+    private File saveDir;
     private File ilastikProjectFile;
     private String thresholdMethodName;
     private double scaleFactor;
     private boolean removeOutliers;
 
     // Parameters
-
-    // For opening and saving images.
-//    @Parameter
-//    private DatasetIOService datasetIOService;
 
     @Parameter
     private DatasetService datasetService;
@@ -102,14 +86,13 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     public void run() {
         logService.info("Starting OIRTuftSegmentation...");
 
-        // If no open image, rompt user to open image to start workflow
-        final ImgPlus<T> openImage = ImgPlus.wrap((Img<T>)currentData.getImgPlus());
-        System.out.println(openImage.getName());
+        // If no open image, prompt user to open image to start workflow
+        final ImgPlus<T> openImage = ImgPlus.wrap((Img<T>) currentData.getImgPlus());
 
         // Start GUI
         try {
             SwingUtilities.invokeAndWait(() -> {
-                dialog = new DialogGUI(ctx, openImage);
+                dialog = new DialogGUI<T>(ctx, openImage);
                 dialog.setVisible(true);
             });
         }
@@ -130,76 +113,80 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
         // Set global vars
         setSelectedImgPlus(dialog.getSelectedImgPlus());
+        setSaveDir(dialog.getSaveDir());
         setIlastikProjectFile(dialog.getIlastikProjectFile());
         setThresholdMethodName(dialog.getThresholdMethodName());
         setScaleFactor(dialog.getScaleFactor());
         setRemoveOutliers(dialog.getRemoveOutliers());
 
         // Apply Pre-Processing
-        preProcessor = new PreProcessor(ctx, imp);
+        preProcessor = new PreProcessor<T>(ctx, imp);
         preProcessor.setScaleFactor(scaleFactor);
         preProcessor.run();
 
         // Run ilastik Prediction
-        ilastikPredictor = new IlastikPredictor(ctx, preProcessor.getScaledImagePlus());
+        ilastikPredictor = new IlastikPredictor(ctx, preProcessor.getPreProcessedImagePlus());
+        ilastikPredictor.setIlastikProjectFile(ilastikProjectFile);
+        ilastikPredictor.run();
 
         // Apply Post-Processing
+        postProcessor = new PostProcessor(ctx, ilastikPredictor.getPredictionImagePlus(), imp.getName());
+        postProcessor.setThresholdMethodName(thresholdMethodName);
+        postProcessor.setRemoveOutliers(removeOutliers);
+        postProcessor.run();
 
-        // Open in 3D Manager
+        // Save post-processed output for user
+        IJ.save(postProcessor.getPostProcessedImage(), saveDir.getAbsolutePath());
 
-        System.out.println("OIRTuftSegmentation finished");
+        // Open in 3D Manager - must use macro as 3D suite is external plugin
+        IJ.runMacro("run(\"3D Manager\");\n" +
+                "Ext.Manager3D_Segment(128, 255);\n" +
+                "wait(5000);\n" +
+                "Ext.Manager3D_AddImage();");
+
+        logService.info("OIRTuftSegmentation finished");
     }
 
     // Mutators
 
     /**
      * Mutator for selected image
-     * @return ImagePlus selected by user in GUI
+     * @param ip ImgPlus<T> to set global var
      */
-    public ImgPlus<T> setSelectedImgPlus(ImgPlus<T> ip) {
-        imp = ip;
-        return imp;
-    }
+    public void setSelectedImgPlus(ImgPlus<T> ip) { imp = ip; }
+
+    /**
+     * Mutator for save directory
+     * @param sd File to save output to
+     */
+    public void setSaveDir(File sd) { saveDir = sd; }
 
     /**
      * Mutator for scale factor
-     * @return double scale factor provided by user in GUI
+     * @param sf double scale factor to set global var
      */
-    public double setScaleFactor(double sf) {
-        scaleFactor = sf;
-        return scaleFactor;
-    }
+    public void setScaleFactor(double sf) { scaleFactor = sf; }
 
     /**
      * Mutator for ilastik project file
-     * @return ilastik project file selected by user in GUI
+     * @param ipf File trained ilastik project to set global var
      */
-    public File setIlastikProjectFile(File ipf) {
-        ilastikProjectFile = ipf;
-        return ilastikProjectFile;
-    }
+    public void setIlastikProjectFile(File ipf) { ilastikProjectFile = ipf; }
 
     /**
      * Mutator for auto-threshold method type
-     * @return String name of auto-threshold method in GUI
+     * @param name String auto-threshold method name to apply
      */
-    public String setThresholdMethodName(String name) {
-        thresholdMethodName = name;
-        return thresholdMethodName;
-    }
+    public void setThresholdMethodName(String name) { thresholdMethodName = name; }
 
     /**
      * Mutator for remove outliers operation
-     * @return boolean indicating if user wishes to remove outliers in GUI
+     * @param ro boolean whether to remove outliers to set global var
      */
-    public boolean setRemoveOutliers(boolean ro) {
-        removeOutliers = ro;
-        return removeOutliers;
-    }
+    public void setRemoveOutliers(boolean ro) { removeOutliers = ro; }
 
     /**
      * Main function for dev purposes
-     *
      * @param args needed but ultimately ignored
      * @throws Exception some exception
      */
@@ -208,19 +195,19 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
         final ImageJ ij = new ImageJ();
         ij.ui().showUI();
 
-//        // ask the user for a file to open
-//        final File file = ij.ui().chooseFile(null, "open");
-//
-//        if (file != null) {
-//            // load the dataset
-//            final Dataset dataset = ij.scifio().datasetIO().open(file.getPath());
-//
-//            // show the image
-//            ij.ui().show(dataset);
-//
-//            // invoke the plugin
-//            ij.command().run(OIRTuftSegmentation.class, true);
-//        }
+        // ask the user for a file to open
+        final File file = ij.ui().chooseFile(null, "open");
+
+        if (file != null) {
+            // load the dataset
+            final Dataset dataset = ij.scifio().datasetIO().open(file.getPath());
+
+            // show the image
+            ij.ui().show(dataset);
+
+            // invoke the plugin
+            ij.command().run(OIRTuftSegmentation.class, true);
+        }
     }
 
 }
