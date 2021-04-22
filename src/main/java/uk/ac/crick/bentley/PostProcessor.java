@@ -35,6 +35,7 @@ public class PostProcessor {
 
     private final String originalName;           // Title of original image
     private final ImagePlus predictionImagePlus;
+    private boolean invertLUT;
     private String thresholdMethodName;
     private boolean removeOutliers;
     private ImagePlus postProcessedImage;
@@ -65,9 +66,11 @@ public class PostProcessor {
         logService.info("Running Post-Processor...");
 
         // Invert Lookup Table (we want white ROI on black background) - useful depending on how ilastik model exports
-//        logService.info("Inverting LUT...");
-//        IJ.run(predictionImagePlus, "Invert LUT", "");
-//        logService.info("LUT inverted.");
+        if(invertLUT) {
+            logService.info("Inverting LUT...");
+            IJ.run(predictionImagePlus, "Invert LUT", "");
+            logService.info("LUT inverted.");
+        }
 
         // Apply specified Auto-Threshold method
         logService.info("Thresholding...");
@@ -98,6 +101,12 @@ public class PostProcessor {
     }
 
     // Mutators
+
+    /**
+     * Mutator for inverting LUT
+     * @param inLUT boolean if user wishes to LUT: invert the LUT
+     */
+    public void setInvertLUT(boolean inLUT) { invertLUT = inLUT; }
 
     /**
      * Mutator for threhold method name

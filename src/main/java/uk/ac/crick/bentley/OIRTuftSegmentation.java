@@ -59,6 +59,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
     private File ilastikProjectFile;
     private String thresholdMethodName;
     private double scaleFactor;
+    private boolean invertLUT;
     private boolean removeOutliers;
 
     // Parameters
@@ -118,6 +119,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
         setIlastikProjectFile(dialog.getIlastikProjectFile());
         setThresholdMethodName(dialog.getThresholdMethodName());
         setScaleFactor(dialog.getScaleFactor());
+        setInvertLUT(dialog.getInvertLUT());
         setRemoveOutliers(dialog.getRemoveOutliers());
 
         // Apply Pre-Processing
@@ -132,6 +134,7 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
 
         // Apply Post-Processing
         postProcessor = new PostProcessor(ctx, ilastikPredictor.getPredictionImagePlus(), imp.getName());
+        postProcessor.setInvertLUT(invertLUT);
         postProcessor.setThresholdMethodName(thresholdMethodName);
         postProcessor.setRemoveOutliers(removeOutliers);
         postProcessor.run();
@@ -179,6 +182,13 @@ public class OIRTuftSegmentation<T extends RealType<T>> implements Command {
      * @param name String auto-threshold method name to apply
      */
     public void setThresholdMethodName(String name) { thresholdMethodName = name; }
+
+    /**
+     * Mutator for remove LUT operation
+     * @param inLUT boolean whether to invert the LUT in post-processing
+     */
+    public void setInvertLUT(boolean inLUT) { invertLUT = inLUT; }
+
 
     /**
      * Mutator for remove outliers operation

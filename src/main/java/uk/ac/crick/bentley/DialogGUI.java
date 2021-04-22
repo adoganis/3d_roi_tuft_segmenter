@@ -63,6 +63,8 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
     private JLabel saveDirLabel;
     private JTextField saveDirPathText;
     private JButton saveDirBrosweButton;
+    private JLabel lutLabel;
+    private JCheckBox invertLUT;
 
     private Context context;
     private boolean runSegmentation = false;    // Segmentation confirmation flag
@@ -73,6 +75,7 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
     private double scaleFactor;
     private File ilastikProjectFile;
     private String thresholdMethodName;
+    private boolean invertPredictionLUT;
     private boolean removeOutliers;
 
     // For logging errors
@@ -159,6 +162,7 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
         scaleFactor = Double.parseDouble(scaleValue.getText());
         ilastikProjectFile = new File(ilastikPathText.getText());
         thresholdMethodName = thresholdComboBox.getSelectedItem().toString();
+        invertPredictionLUT = invertLUT.isSelected();
         removeOutliers = removeNoise.isSelected();
     }
 
@@ -306,6 +310,12 @@ public class DialogGUI<T extends RealType<T>> extends JFrame {
      * @return String name of auto-threshold method
      */
     public String getThresholdMethodName() { return thresholdMethodName; }
+
+    /**
+     * Accessor for invert LUT operation
+     * @return boolean indicating if user wishes to invert the LUT in post-processing
+     */
+    public boolean getInvertLUT() { return invertPredictionLUT; }
 
     /**
      * Accessor for remove outliers operation
